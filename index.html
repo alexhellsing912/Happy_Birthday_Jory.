@@ -1,0 +1,602 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>The Love Archive 🌹</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700;900&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --rose: #e8a0b4; --rose-deep: #c0547a;
+    --gold: #f0c060; --dark: #0d0818;
+    --purple-glow: #7b2fa0; --magic-cyan: #00e5ff;
+    --text-light: #f5e6f0;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { font-family:'Cormorant Garamond',serif; background:var(--dark); color:var(--text-light); min-height:100vh; overflow-x:hidden; }
+
+  #particles-canvas { position:fixed; inset:0; pointer-events:none; z-index:0; }
+  #confetti-canvas  { position:fixed; inset:0; pointer-events:none; z-index:999; }
+
+  #audio-controls { position:fixed; top:14px; right:14px; z-index:9999; display:none; }
+  .audio-btn { background:rgba(232,160,180,.15); border:1px solid var(--rose); color:var(--rose); border-radius:50%; width:40px; height:40px; font-size:18px; cursor:pointer; backdrop-filter:blur(8px); transition:all .3s; display:flex; align-items:center; justify-content:center; }
+  .audio-btn:hover { background:rgba(232,160,180,.3); transform:scale(1.1); }
+
+  #progress-wrap { position:fixed; top:0; left:0; right:0; height:3px; background:rgba(255,255,255,.08); z-index:9998; display:none; }
+  #progress-bar  { height:100%; background:linear-gradient(90deg,var(--rose),var(--gold)); transition:width .6s; box-shadow:0 0 8px var(--rose); width:0%; }
+
+  /* SCREENS */
+  .screen { position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; z-index:10; padding:20px; transition:opacity .7s, transform .7s; overflow-y:auto; }
+  .screen.hidden { opacity:0; pointer-events:none; transform:scale(.97); }
+
+  /* ── INTRO ── */
+  #screen-intro { background:radial-gradient(ellipse at center,#1a0530 0%,#0d0818 70%); }
+  .stars { position:absolute; inset:0; background-image: radial-gradient(1px 1px at 15% 25%,rgba(255,255,255,.8) 0%,transparent 100%), radial-gradient(1px 1px at 50% 10%,rgba(255,255,255,.6) 0%,transparent 100%), radial-gradient(1px 1px at 80% 55%,rgba(255,255,255,.7) 0%,transparent 100%), radial-gradient(1px 1px at 35% 75%,rgba(255,255,255,.5) 0%,transparent 100%), radial-gradient(2px 2px at 45% 40%,rgba(240,192,96,.6) 0%,transparent 100%), radial-gradient(2px 2px at 78% 60%,rgba(232,160,180,.5) 0%,transparent 100%); pointer-events:none; }
+  .intro-inner { position:relative; text-align:center; max-width:680px; width:100%; }
+  .intro-crown  { font-size:56px; display:block; margin-bottom:10px; filter:drop-shadow(0 0 20px var(--gold)); animation:float 3s ease-in-out infinite; }
+  .intro-title  { font-family:'Cinzel Decorative',serif; font-size:clamp(20px,5vw,40px); color:var(--gold); text-shadow:0 0 30px rgba(240,192,96,.8); letter-spacing:4px; margin-bottom:6px; animation:glow-pulse 3s ease-in-out infinite; }
+  .intro-sub    { font-family:'Cinzel Decorative',serif; font-size:clamp(11px,2.5vw,16px); color:var(--rose); letter-spacing:6px; margin-bottom:36px; }
+  .intro-msg    { font-size:clamp(14px,2.3vw,18px); font-style:italic; color:var(--text-light); line-height:1.9; margin-bottom:44px; border-left:2px solid var(--rose); padding-left:18px; text-align:left; }
+  .pw-section   { width:100%; max-width:360px; margin:0 auto; }
+  .pw-label     { font-family:'Rajdhani',sans-serif; font-size:12px; color:var(--rose); letter-spacing:3px; text-transform:uppercase; text-align:center; margin-bottom:6px; }
+  .pw-hint      { font-family:'Rajdhani',sans-serif; font-size:11px; color:rgba(240,192,96,.7); letter-spacing:2px; text-align:center; margin-bottom:14px; }
+  .pw-input     { width:100%; background:rgba(255,255,255,.05); border:1px solid rgba(232,160,180,.4); border-radius:6px; padding:13px 20px; font-family:'Rajdhani',sans-serif; font-size:22px; letter-spacing:6px; color:var(--gold); text-align:center; outline:none; transition:border-color .3s,box-shadow .3s; }
+  .pw-input:focus { border-color:var(--rose); box-shadow:0 0 18px rgba(232,160,180,.3); }
+  .pw-input.wrong { border-color:#ff4466; animation:shake .4s; }
+  .btn-enter    { width:100%; margin-top:14px; padding:13px; background:linear-gradient(135deg,var(--rose-deep),var(--purple-glow)); border:none; border-radius:6px; font-family:'Cinzel Decorative',serif; font-size:13px; letter-spacing:3px; color:#fff; cursor:pointer; transition:all .3s; box-shadow:0 4px 18px rgba(192,84,122,.4); }
+  .btn-enter:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(192,84,122,.6); }
+  .pw-error     { color:#ff6688; font-size:13px; font-style:italic; text-align:center; margin-top:8px; min-height:20px; }
+
+  /* ── ACT 1 ── */
+  #screen-act1 { background:radial-gradient(ellipse at 30% 40%,#2a0a1a 0%,#0d0818 60%); }
+  .act-header { text-align:center; margin-bottom:28px; }
+  .act-badge  { font-family:'Rajdhani',sans-serif; font-size:11px; letter-spacing:5px; color:var(--rose); text-transform:uppercase; margin-bottom:6px; }
+  .act-title  { font-family:'Cinzel Decorative',serif; font-size:clamp(16px,4vw,28px); color:var(--gold); text-shadow:0 0 18px rgba(240,192,96,.6); }
+  .ch-counter { font-family:'Rajdhani',sans-serif; font-size:12px; color:rgba(245,230,240,.5); letter-spacing:3px; margin-top:5px; }
+
+  .ch-card { background:rgba(255,255,255,.04); border:1px solid rgba(232,160,180,.2); border-radius:12px; padding:30px; max-width:580px; width:100%; backdrop-filter:blur(10px); box-shadow:0 20px 50px rgba(0,0,0,.4),inset 0 1px 0 rgba(255,255,255,.04); animation:appear .5s ease; }
+  .ch-num  { font-family:'Rajdhani',sans-serif; font-size:11px; letter-spacing:4px; color:var(--rose); margin-bottom:14px; text-transform:uppercase; }
+  .ch-q    { font-size:clamp(16px,3vw,21px); font-style:italic; color:var(--text-light); line-height:1.6; margin-bottom:22px; }
+
+  .opts-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+  .opt-btn  { background:rgba(255,255,255,.04); border:1px solid rgba(232,160,180,.22); border-radius:8px; padding:12px 14px; font-family:'Cormorant Garamond',serif; font-size:15px; color:var(--text-light); cursor:pointer; transition:all .22s; text-align:left; line-height:1.4; }
+  .opt-btn:not(:disabled):hover { background:rgba(232,160,180,.12); border-color:var(--rose); transform:translateY(-1px); }
+  .opt-btn.is-correct { background:rgba(100,220,150,.2)!important; border-color:#64dc96!important; color:#a0f0c0!important; }
+  .opt-btn.is-wrong   { background:rgba(255,80,100,.15)!important; border-color:#ff5064!important; color:#ff9099!important; }
+  .opt-btn:disabled   { cursor:default; }
+
+  .order-label { font-family:'Rajdhani',sans-serif; font-size:11px; color:rgba(245,230,240,.5); letter-spacing:2px; margin-bottom:7px; }
+  .word-zone   { display:flex; flex-wrap:wrap; gap:7px; padding:10px; border-radius:8px; min-height:48px; }
+  .zone-pool   { background:rgba(0,0,0,.2); border:1px dashed rgba(232,160,180,.2); margin-bottom:14px; }
+  .zone-result { background:rgba(240,192,96,.04); border:1px dashed rgba(240,192,96,.3); margin-bottom:14px; }
+  .w-chip      { background:rgba(232,160,180,.14); border:1px solid rgba(232,160,180,.38); border-radius:20px; padding:4px 13px; font-size:13px; color:var(--text-light); cursor:pointer; user-select:none; transition:all .18s; }
+  .w-chip:hover { background:rgba(232,160,180,.28); transform:scale(1.04); }
+  .w-chip.placed { opacity:.28; pointer-events:none; }
+  .zone-result .w-chip { background:rgba(240,192,96,.18); border-color:rgba(240,192,96,.45); }
+  .btn-check { width:100%; padding:12px; background:linear-gradient(135deg,rgba(232,160,180,.18),rgba(240,192,96,.18)); border:1px solid var(--rose); border-radius:6px; font-family:'Rajdhani',sans-serif; font-size:13px; letter-spacing:3px; color:var(--rose); cursor:pointer; transition:all .3s; text-transform:uppercase; }
+  .btn-check:hover { background:rgba(232,160,180,.28); box-shadow:0 0 18px rgba(232,160,180,.3); }
+
+  .fb-msg    { text-align:center; font-size:13px; margin-top:10px; min-height:20px; font-style:italic; }
+  .fb-msg.ok { color:#64dc96; }
+  .fb-msg.err{ color:#ff6688; }
+
+  /* ── MODAL ── */
+  .modal-overlay { position:fixed; inset:0; background:rgba(0,0,0,.85); z-index:1000; display:flex; align-items:center; justify-content:center; padding:20px; opacity:0; pointer-events:none; transition:opacity .4s; backdrop-filter:blur(4px); }
+  .modal-overlay.active { opacity:1; pointer-events:all; }
+  .modal-card  { background:linear-gradient(135deg,#1a0a2e,#2a1040); border:1px solid rgba(232,160,180,.4); border-radius:16px; padding:34px; max-width:480px; width:100%; text-align:center; box-shadow:0 0 60px rgba(192,84,122,.4); transform:scale(.9); transition:transform .4s; }
+  .modal-overlay.active .modal-card { transform:scale(1); }
+  .modal-emoji { font-size:56px; margin-bottom:14px; animation:bounce 1s ease infinite; }
+  .modal-title { font-family:'Cinzel Decorative',serif; font-size:19px; color:var(--gold); margin-bottom:10px; text-shadow:0 0 18px rgba(240,192,96,.6); }
+  .modal-msg   { font-size:16px; font-style:italic; color:var(--text-light); line-height:1.7; margin-bottom:18px; }
+  .modal-photo { width:100%; max-height:240px; object-fit:cover; border-radius:10px; margin-bottom:18px; border:2px solid rgba(232,160,180,.3); display:none; }
+  .modal-photo.show { display:block; }
+  .btn-modal   { padding:11px 30px; background:linear-gradient(135deg,var(--rose-deep),var(--purple-glow)); border:none; border-radius:6px; font-family:'Cinzel Decorative',serif; font-size:12px; letter-spacing:2px; color:#fff; cursor:pointer; transition:all .3s; }
+  .btn-modal:hover { transform:translateY(-2px); box-shadow:0 8px 22px rgba(192,84,122,.5); }
+
+  /* ── BOX ── */
+  #screen-box { background:radial-gradient(ellipse at center,#1a0a20 0%,#0d0818 70%); text-align:center; }
+  .box-emoji  { font-size:86px; display:block; margin-bottom:18px; animation:float 2s ease-in-out infinite; filter:drop-shadow(0 0 28px rgba(240,192,96,.8)); }
+  .box-title  { font-family:'Cinzel Decorative',serif; font-size:clamp(18px,4vw,32px); color:var(--gold); text-shadow:0 0 28px rgba(240,192,96,.8); margin-bottom:18px; }
+  .box-msg    { font-size:clamp(15px,2.3vw,19px); font-style:italic; color:var(--text-light); line-height:1.8; max-width:500px; margin:0 auto 28px; }
+  .btn-next   { padding:13px 38px; background:linear-gradient(135deg,var(--rose-deep),var(--purple-glow)); border:none; border-radius:6px; font-family:'Cinzel Decorative',serif; font-size:12px; letter-spacing:3px; color:#fff; cursor:pointer; transition:all .3s; box-shadow:0 4px 22px rgba(123,47,160,.5); }
+  .btn-next:hover { transform:translateY(-3px); box-shadow:0 10px 32px rgba(123,47,160,.7); }
+
+  /* ── QUEEN ── */
+  #screen-queen { background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0818 70%); text-align:center; }
+  .queen-crown { font-size:76px; animation:float 2.5s ease-in-out infinite; margin-bottom:18px; filter:drop-shadow(0 0 24px var(--gold)); }
+  .queen-title { font-family:'Cinzel Decorative',serif; font-size:clamp(14px,3vw,22px); color:var(--gold); letter-spacing:4px; margin-bottom:10px; text-shadow:0 0 18px rgba(240,192,96,.8); }
+  .queen-tag   { display:inline-block; background:linear-gradient(135deg,rgba(240,192,96,.18),rgba(232,160,180,.18)); border:1px solid var(--gold); border-radius:30px; padding:5px 22px; font-family:'Rajdhani',sans-serif; font-size:12px; letter-spacing:4px; color:var(--gold); margin-bottom:24px; text-transform:uppercase; }
+  .queen-msg   { font-size:clamp(14px,2.3vw,18px); font-style:italic; color:var(--text-light); line-height:1.8; max-width:540px; margin:0 auto 28px; }
+  .btn-accept  { padding:13px 34px; background:linear-gradient(135deg,#7b2fa0,#4a1a6e); border:1px solid rgba(123,47,160,.6); border-radius:6px; font-family:'Cinzel Decorative',serif; font-size:12px; letter-spacing:2px; color:#fff; cursor:pointer; transition:all .3s; box-shadow:0 4px 18px rgba(123,47,160,.5); }
+  .btn-accept:hover { transform:translateY(-3px); box-shadow:0 10px 32px rgba(123,47,160,.8); }
+
+  /* ── ACT 3 ── */
+  #screen-act3 { background:radial-gradient(ellipse at 50% 30%,#1a0a2e 0%,#050310 70%); }
+  .circle-wrap { position:relative; width:180px; height:180px; margin:0 auto 16px; }
+  .circle-ring { width:100%; height:100%; border-radius:50%; background:radial-gradient(circle,rgba(123,47,160,.28) 0%,transparent 70%); box-shadow:0 0 36px rgba(123,47,160,.6); display:flex; align-items:center; justify-content:center; position:relative; }
+  .circle-ring::before { content:''; position:absolute; inset:-5px; border-radius:50%; border:2px solid transparent; border-top-color:var(--magic-cyan); border-right-color:rgba(0,229,255,.3); animation:spin 3s linear infinite; }
+  .circle-ring::after  { content:''; position:absolute; inset:-15px; border-radius:50%; border:1px solid transparent; border-bottom-color:var(--purple-glow); animation:spin 5s linear infinite reverse; }
+  .circle-text { font-family:'Cinzel Decorative',serif; font-size:13px; color:var(--magic-cyan); text-shadow:0 0 10px var(--magic-cyan); }
+  .orbs { display:flex; gap:8px; justify-content:center; margin-bottom:14px; }
+  .orb  { width:13px; height:13px; border-radius:50%; background:rgba(255,255,255,.1); border:1px solid rgba(123,47,160,.4); transition:all .5s; }
+  .orb.lit { background:var(--magic-cyan); box-shadow:0 0 10px var(--magic-cyan); border-color:var(--magic-cyan); }
+  .nch-card { background:rgba(10,5,25,.7); border:1px solid rgba(123,47,160,.4); border-radius:12px; padding:26px; max-width:540px; width:100%; backdrop-filter:blur(10px); box-shadow:0 0 38px rgba(123,47,160,.2); animation:appear .5s ease; }
+  .nch-num  { font-family:'Rajdhani',sans-serif; font-size:11px; letter-spacing:4px; color:var(--magic-cyan); margin-bottom:12px; text-transform:uppercase; }
+  .nch-q    { font-size:clamp(15px,2.5vw,20px); font-style:italic; color:var(--text-light); line-height:1.6; margin-bottom:10px; }
+  .nch-hint { font-family:'Rajdhani',sans-serif; font-size:11px; color:rgba(0,229,255,.6); letter-spacing:2px; margin-bottom:14px; }
+  .noctis-input { width:100%; background:rgba(255,255,255,.04); border:1px solid rgba(123,47,160,.4); border-radius:6px; padding:12px 16px; font-family:'Cormorant Garamond',serif; font-size:18px; color:var(--magic-cyan); outline:none; transition:border-color .3s,box-shadow .3s; margin-bottom:12px; text-align:center; }
+  .noctis-input:focus { border-color:var(--magic-cyan); box-shadow:0 0 18px rgba(0,229,255,.2); }
+  .btn-invoke { width:100%; padding:12px; background:linear-gradient(135deg,rgba(123,47,160,.28),rgba(74,144,217,.28)); border:1px solid rgba(123,47,160,.6); border-radius:6px; font-family:'Rajdhani',sans-serif; font-size:13px; letter-spacing:3px; color:var(--magic-cyan); cursor:pointer; transition:all .3s; text-transform:uppercase; }
+  .btn-invoke:hover { box-shadow:0 0 22px rgba(123,47,160,.5); }
+
+  /* ── FINAL ── 
+  #screen-final { background:radial-gradient(ellipse at center,#1a0a2e 0%,#0d0818 70%); text-align:center; }
+  .final-glow  { position:absolute; inset:0; background:radial-gradient(ellipse at center,rgba(123,47,160,.14) 0%,transparent 70%); pointer-events:none; }
+  .final-emoji { font-size:68px; animation:float 2s ease-in-out infinite; margin-bottom:18px; }
+  .final-title { font-family:'Cinzel Decorative',serif; font-size:clamp(18px,4vw,32px); color:var(--gold); text-shadow:0 0 28px rgba(240,192,96,.8); margin-bottom:18px; }
+  .final-msg   { font-size:clamp(14px,2.3vw,18px); font-style:italic; color:var(--text-light); line-height:1.9; max-width:540px; margin:0 auto 26px; }
+  .final-sig   { font-family:'Cinzel Decorative',serif; font-size:13px; color:var(--rose); letter-spacing:3px; }
+  .noctis-reveal { max-width:260px; width:88%; border-radius:50%; border:3px solid var(--magic-cyan); box-shadow:0 0 48px rgba(0,229,255,.6),0 0 90px rgba(123,47,160,.4); margin:0 auto 26px; display:block; animation:float 3s ease-in-out infinite; filter:brightness(1.1) saturate(1.2); }
+  */
+
+  @keyframes float     { 0%,100%{transform:translateY(0)} 50%{transform:translateY(-12px)} }
+  @keyframes glow-pulse{ 0%,100%{text-shadow:0 0 20px rgba(240,192,96,.6),0 0 40px rgba(240,192,96,.3)} 50%{text-shadow:0 0 30px rgba(240,192,96,.9),0 0 60px rgba(240,192,96,.6)} }
+  @keyframes bounce    { 0%,100%{transform:translateY(0) scale(1)} 50%{transform:translateY(-8px) scale(1.05)} }
+  @keyframes shake     { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-8px)} 75%{transform:translateX(8px)} }
+  @keyframes spin      { from{transform:rotate(0deg)} to{transform:rotate(360deg)} }
+  @keyframes appear    { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+  @media(max-width:480px){ .opts-grid{grid-template-columns:1fr;} .ch-card,.nch-card{padding:18px;} }
+</style>
+</head>
+<body>
+
+<!-- AUDIO -->
+<!-- 🎵 musica_intro.mp3   → Romántica/emotiva  (ej: A Thousand Years - Christina Perri)      -->
+<!-- 🎵 musica_acto2.mp3   → Épica/dramática    (ej: Two Steps From Hell - Victory)            -->
+<!-- 🎵 musica_noctis.mp3  → Misteriosa/mágica  (ej: Ori and the Blind Forest - Main Theme)   -->
+<audio id="aud-intro"  loop><source src="musica_intro.mp3"  type="audio/mpeg"></audio>
+<audio id="aud-act2"   loop><source src="musica_acto2.mp3"  type="audio/mpeg"></audio>
+<audio id="aud-noctis" loop><source src="musica_noctis.mp3" type="audio/mpeg"></audio>
+
+<div id="progress-wrap"><div id="progress-bar"></div></div>
+<div id="audio-controls"><button class="audio-btn" id="btn-mute">🔊</button></div>
+
+<canvas id="confetti-canvas"></canvas>
+<canvas id="particles-canvas"></canvas>
+
+<!-- ══ INTRO ══ -->
+<div class="screen" id="screen-intro">
+  <div class="stars"></div>
+  <div class="intro-inner">
+    <span class="intro-crown">✨</span>
+    <div class="intro-title">The Love Archive</div>
+    <div class="intro-sub">Para Jorimar</div>
+    <p class="intro-msg">
+      "Feliz cumpleaños a la más bella habitante de este universo, el multiverso y la realidad misma.
+      Eres el astro que ilumina mis días, el norte que guía mis pasos y la razón por la que cada momento
+      brilla con luz propia. Que los desafíos que te esperan sean dignos de ti...
+      porque solo la más especial puede superarlos. Bienvenida, Jorimar. 🌹"
+    </p>
+    <div class="pw-section">
+      <div class="pw-label">Acceso Restringido</div>
+      <div class="pw-hint">🔑 Ingresa nuestra fecha especial en formato DDMMAAAA</div>
+      <input class="pw-input" id="pw-inp" type="password" maxlength="8" placeholder="••••••••" autocomplete="off"/>
+      <button class="btn-enter" onclick="checkPW()">✦ Entrar al Archivo ✦</button>
+      <div class="pw-error" id="pw-err"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ACT 1 — single card, updated by JS ══ -->
+<div class="screen hidden" id="screen-act1">
+  <div class="act-header">
+    <div class="act-badge">⚔️ Acto I</div>
+    <div class="act-title">Los Desafíos de la Caja Misteriosa</div>
+    <div class="ch-counter" id="ch-counter">Desafío 1 de 5</div>
+  </div>
+  <div class="ch-card" id="ch-card">
+    <div class="ch-num" id="ch-num">✦ Desafío 01 ✦</div>
+    <div class="ch-q"   id="ch-q"></div>
+    <!-- Multiple choice grid -->
+    <div class="opts-grid" id="opts-grid"></div>
+    <!-- Bonus ordering (hidden until bonus step) -->
+    <div id="order-section" style="display:none">
+      <div class="order-label">TU SELECCIÓN:</div>
+      <div class="word-zone zone-result" id="zone-result"></div>
+      <div class="order-label">PALABRAS DISPONIBLES:</div>
+      <div class="word-zone zone-pool"   id="zone-pool"></div>
+      <button class="btn-check" onclick="checkOrder()">✦ Revelar Mensaje ✦</button>
+    </div>
+    <div class="fb-msg" id="ch-fb"></div>
+  </div>
+</div>
+
+<!-- ══ BOX ══ -->
+<div class="screen hidden" id="screen-box">
+  <span class="box-emoji">🎁</span>
+  <div class="box-title">¡Lo Lograste, Jorimar!</div>
+  <p class="box-msg">Has superado todos los desafíos con la gracia de quien sabe exactamente lo que lleva en el corazón. Tu <strong style="color:var(--gold)">Caja Misteriosa</strong> está esperando por ti... llegará a tus manos muy pronto. 😏✨</p>
+  <button class="btn-next" onclick="goQueen()">✦ Continuar ✦</button>
+</div>
+
+<!-- ══ QUEEN ══ -->
+<div class="screen hidden" id="screen-queen">
+  <div class="queen-crown">👑</div>
+  <div class="queen-title">Espera...</div>
+  <div class="queen-tag">⚡ Jugadora Especial Detectada ⚡</div>
+  <p class="queen-msg">El sistema ha reconocido a una jugadora de élite. Eres la denominada <strong style="color:var(--gold)">QUEEN</strong> — la única con el poder de invocar al <strong style="color:var(--magic-cyan)">Mago Misterioso Noctis</strong>.<br><br>Completa los 5 desafíos de invocación y Noctis se manifestará ante ti... de una forma que jamás olvidarás. 🔮</p>
+  <button class="btn-accept" onclick="goAct3()">🔮 Aceptar el Desafío</button>
+</div>
+
+<!-- ══ ACT 3 ══ -->
+<div class="screen hidden" id="screen-act3">
+  <div class="act-header">
+    <div class="act-badge" style="color:var(--magic-cyan)">🔮 La Invocación</div>
+    <div class="act-title" style="color:var(--magic-cyan);text-shadow:0 0 18px rgba(0,229,255,.6)">Noctis está cerca...</div>
+  </div>
+  <div class="circle-wrap">
+    <div class="circle-ring"><div class="circle-text" id="circle-text">0/5</div></div>
+  </div>
+  <div class="orbs">
+    <div class="orb" id="o0"></div><div class="orb" id="o1"></div>
+    <div class="orb" id="o2"></div><div class="orb" id="o3"></div>
+    <div class="orb" id="o4"></div>
+  </div>
+  <div class="nch-card">
+    <div class="nch-num"  id="nch-num">✦ Invocación 01/05 ✦</div>
+    <div class="nch-q"    id="nch-q"></div>
+    <div class="nch-hint" id="nch-hint"></div>
+    <input class="noctis-input" id="nch-inp" autocomplete="off"/>
+    <button class="btn-invoke" onclick="checkNoctis()">⚡ Invocar ⚡</button>
+    <div class="fb-msg" id="nch-fb"></div>
+  </div>
+</div>
+
+<!-- ══ FINAL ══ -->
+  <div class="screen hidden" id="screen-final">
+    <img src="noctis_final.jpg" alt="">
+  <div class="final-glow"></div>
+  <div class="final-emoji">🔮✨</div>
+  <div class="final-title">¡Noctis ha sido Invocado!</div>
+  <!--
+    📸 FOTO FINAL DE NOCTIS
+    Pon tu imagen en la carpeta con el nombre: noctis_final.jpg
+    (también acepta .png o .webp — cambia la extensión abajo)
+  -->
+  <img class="noctis-reveal" src="noctis_final.jpg" alt="El Mago Noctis" onerror="this.style.display='none'"/>
+  <p class="final-msg">Lo lograste, <strong style="color:var(--gold)">Queen Jorimar</strong>. 🌹<br><br>El Mago Noctis ha sentido el poder de tu amor y pronto se manifestará ante ti... en una forma que trasciende este mundo. Mantén los ojos abiertos, porque la magia está más cerca de lo que crees. 🔮<br><br>Mientras tanto, ya puedes reclamar tu <strong style="color:var(--gold)">Caja Misteriosa</strong>. Feliz cumpleaños, luna mía. Gracias por hacer brillar cada día con solo existir. 💫</p>
+  <div class="final-sig">— Con amor etéreo, Alex (Noctis) 🌙</div>
+</div>
+
+<!-- ══ REWARD MODAL ══ -->
+<div class="modal-overlay" id="modal">
+  <div class="modal-card">
+    <div class="modal-emoji" id="m-emoji">🌹</div>
+    <div class="modal-title" id="m-title"></div>
+    <!--
+      📸 FOTOS DE RECOMPENSA (Acto 1) — pon en la misma carpeta:
+        foto_1.jpg → Desafío 1 (el cine)
+        foto_2.jpg → Desafío 2 (el abrazo)
+        foto_3.jpg → Desafío 3 (el balcón)
+        foto_4.jpg → Desafío 4 (la mano en el corazón)
+        foto_5.jpg → Desafío 5 (Over jajaja)
+    -->
+    <img class="modal-photo" id="m-photo" src="" alt="" />
+    <!--onerror="this.style.display='none'"-->
+    <p class="modal-msg" id="m-msg"></p>
+    <button class="btn-modal" onclick="closeModal()">Continuar ✦</button>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════
+// DATA
+// ══════════════════════════
+const PASSWORD = '11062025';
+
+// correctIdx = index in opts array that is the RIGHT answer
+const CHALLENGES = [
+  { q:'¿En qué lugar fue nuestra primera cita?',
+    opts:['🌿 En un parque','🎬 En el cine','🍽️ En un restaurante','🏖️ En la playa'],
+    correctIdx: 1 },
+  { q:'¿Qué hicimos la primera vez que nos vimos?',
+    opts:['🤝 Nos dimos la mano','👋 Nos saludamos de lejos','🤗 Nos abrazamos','😶 Nos ignoramos jajaja'],
+    correctIdx: 2 },
+  { q:'¿De qué hablamos en el balcón?',
+    opts:['🌅 De la vista desde arriba','🌙 De nuestros sueños','🔮 Del futuro','🪂 De qué pasaría si saltáramos'],
+    correctIdx: 3 },
+  { q:'¿Qué fue lo inesperado del balcón?',
+    opts:['💨 El viento de repente','🎵 Una canción sonando','💋 Un beso inesperado','🫀 La mano en el corazón'],
+    correctIdx: 3 },
+  { q:'¿Por qué perseguían a Over?',
+    opts:['💼 Por dinero','❤️ Por amor','🕵️ Por un secreto','🤷 Aún no sabemos jajaja'],
+    correctIdx: 3 }
+];
+
+const REWARDS = [
+  { emoji:'🎬', title:'¡Primera estrella desbloqueada!',    msg:'Ahí empezó todo, mi luna. En la oscuridad de esa sala, sin saberlo, ya brillabas más que cualquier pantalla. 🌹' },
+  { emoji:'🤗', title:'¡Momento desbloqueado!',             msg:'Ese abrazo lo guardé en el lugar más secreto de mi corazón. Fue el primero de infinitos. ✨' },
+  { emoji:'🏙️', title:'¡Recuerdo desbloqueado!',            msg:'El balcón fue testigo de cómo dos almas sin filtro hablaban de lo imposible con la misma naturalidad. Eso me enamoró. 💫' },
+  { emoji:'🫀', title:'¡Instante desbloqueado!',             msg:'Ese gesto inesperado lo dijo todo sin palabras. Mi corazón ya sabía algo que mi mente aún no terminaba de procesar. 🌙' },
+  { emoji:'🤷✨',title:'¡Misterio eterno desbloqueado!',     msg:'¡Jajaja! Aún no sabemos y así seguirá siendo un misterio... como muchas cosas hermosas en la vida. 🎭' }
+];
+
+const PHRASE = ['Te','quiero','ver','brillar','como','el','astro','que','nos','hizo','dejar','rastro','en','este','vasto','universo','abstracto'];
+
+const N_CHALLENGES = [
+  { q:'¿Cuál es la fecha de nacimiento del Mago Noctis?',       hint:'Pista: día, mes y año.', ph:'Ej: 08 sept 2008' },
+  { q:'¿A qué lugar soñaría viajar el Mago Noctis?',            hint:'País o ciudad.', ph:'Un lugar soñado...' },
+  { q:'¿Cuál es el anime favorito de Noctis?',                  hint:'El título exacto del anime.', ph:'Nombre del anime...' },
+  { q:'¿Cuál es el número favorito del Mago Noctis?',           hint:'Solo el número.', ph:'Un número...' },
+  { q:'¿Quién es la persona favorita del Mago Noctis?',         hint:'Su nombre 😏', ph:'El nombre...' }
+];
+
+const N_MSGS = [
+  { msg:'¡Primer sello roto! La fecha resuena en el éter... ¡El círculo comienza a girar! 🔮' },
+  { msg:'¡Segundo sello caído! Japón, tierra de sakuras y espadas. El mago sueña con ese horizonte. 🌸' },
+  { msg:'¡Tercer sello destruido! One Piece — el mago navega en los mares de Luffy. ⚓' },
+  { msg:'¡Cuarto sello roto! El 8, número del infinito retorcido, vibra con el mago. 8️⃣' },
+  { msg:'¡QUINTO SELLO CAÍDO! Jorimar... siempre fue ella. ¡LA INVOCACIÓN ESTÁ COMPLETA! 👑💫' }
+];
+
+// ══════════════════════════
+// STATE
+// ══════════════════════════
+let curCh = 0;
+let noctisStep = 0;
+let modalCB = null;
+let muted = false;
+let curAudio = null;
+let placedWords = [];
+let shuffled = [];
+let locked = false; // prevent double interactions
+
+// ══════════════════════════
+// PARTICLES
+// ══════════════════════════
+const pCv = document.getElementById('particles-canvas');
+const pCx = pCv.getContext('2d');
+let pts = [];
+function rParts(){ pCv.width=innerWidth; pCv.height=innerHeight; }
+rParts(); addEventListener('resize',rParts);
+function mkPt(){ return { x:Math.random()*pCv.width, y:Math.random()*pCv.height, r:Math.random()*1.4+.4, dx:(Math.random()-.5)*.3, dy:-Math.random()*.5-.1, a:Math.random()*.5+.2, c:Math.random()>.5?'#e8a0b4':'#f0c060' }; }
+for(let i=0;i<80;i++) pts.push(mkPt());
+(function loop(){ pCx.clearRect(0,0,pCv.width,pCv.height); pts.forEach((p,i)=>{ pCx.beginPath(); pCx.arc(p.x,p.y,p.r,0,Math.PI*2); pCx.fillStyle=p.c; pCx.globalAlpha=p.a; pCx.fill(); p.x+=p.dx; p.y+=p.dy; if(p.y<-5||p.x<-5||p.x>pCv.width+5) pts[i]=mkPt(); }); pCx.globalAlpha=1; requestAnimationFrame(loop); })();
+
+// ══════════════════════════
+// CONFETTI
+// ══════════════════════════
+const cCv = document.getElementById('confetti-canvas');
+const cCx = cCv.getContext('2d');
+function rConf(){ cCv.width=innerWidth; cCv.height=innerHeight; }
+rConf(); addEventListener('resize',rConf);
+function launchConfetti(dur=2600){
+  let ps=[]; for(let i=0;i<110;i++) ps.push({x:Math.random()*cCv.width,y:-10-Math.random()*180,w:Math.random()*9+4,h:Math.random()*5+2,c:['#e8a0b4','#f0c060','#b080f0','#00e5ff','#fff','#ff80aa'][Math.floor(Math.random()*6)],rot:Math.random()*360,dr:(Math.random()-.5)*5,dy:Math.random()*3+1.5,dx:(Math.random()-.5)*1.5});
+  const end=Date.now()+dur;
+  (function loop(){ cCx.clearRect(0,0,cCv.width,cCv.height); ps.forEach(p=>{ cCx.save(); cCx.translate(p.x,p.y); cCx.rotate(p.rot*Math.PI/180); cCx.fillStyle=p.c; cCx.globalAlpha=.85; cCx.fillRect(-p.w/2,-p.h/2,p.w,p.h); cCx.restore(); p.x+=p.dx; p.y+=p.dy; p.rot+=p.dr; }); if(Date.now()<end) requestAnimationFrame(loop); else cCx.clearRect(0,0,cCv.width,cCv.height); })();
+}
+
+// ══════════════════════════
+// AUDIO
+// ══════════════════════════
+function playAudio(id){
+  if(curAudio){ curAudio.pause(); curAudio.currentTime=0; }
+  curAudio=document.getElementById(id);
+  if(!muted) curAudio.play().catch(()=>{});
+}
+document.getElementById('btn-mute').onclick=function(){ muted=!muted; this.textContent=muted?'🔇':'🔊'; if(curAudio){ if(muted) curAudio.pause(); else curAudio.play().catch(()=>{}); } };
+
+// ══════════════════════════
+// SCREENS
+// ══════════════════════════
+function showScreen(id){ document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function setProgress(p){ document.getElementById('progress-bar').style.width=p+'%'; }
+
+// ══════════════════════════
+// PASSWORD
+// ══════════════════════════
+function checkPW(){
+  const v=document.getElementById('pw-inp').value.trim();
+  const inp=document.getElementById('pw-inp');
+  const err=document.getElementById('pw-err');
+  if(v===PASSWORD){
+    inp.style.borderColor='#64dc96'; err.style.color='#64dc96'; err.textContent='✨ Acceso concedido, Jorimar...';
+    setTimeout(()=>{ document.getElementById('progress-wrap').style.display='block'; document.getElementById('audio-controls').style.display='flex'; playAudio('aud-intro'); loadChallenge(0); showScreen('screen-act1'); setProgress(2); },900);
+  } else {
+    inp.classList.add('wrong'); err.textContent='✗ Esa no es nuestra fecha especial... 🌹'; setTimeout(()=>inp.classList.remove('wrong'),500);
+  }
+}
+document.getElementById('pw-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') checkPW(); });
+
+// ══════════════════════════
+// LOAD CHALLENGE (one at a time)
+// ══════════════════════════
+function loadChallenge(idx){
+  curCh=idx; locked=false;
+  document.getElementById('ch-fb').textContent='';
+  document.getElementById('ch-fb').className='fb-msg';
+  document.getElementById('opts-grid').style.display='grid';
+  document.getElementById('order-section').style.display='none';
+
+  if(idx < CHALLENGES.length){
+    const ch=CHALLENGES[idx];
+    document.getElementById('ch-num').textContent='✦ Desafío 0'+(idx+1)+' ✦';
+    document.getElementById('ch-counter').textContent='Desafío '+(idx+1)+' de 5';
+    document.getElementById('ch-q').textContent=ch.q;
+    const grid=document.getElementById('opts-grid');
+    grid.innerHTML='';
+    ch.opts.forEach((label,i)=>{
+      const btn=document.createElement('button');
+      btn.className='opt-btn';
+      btn.textContent=label;
+      // ★ KEY FIX: capture idx and i by value in closure
+      (function(capturedChIdx, capturedOptIdx){
+        btn.addEventListener('click', function(){ handleOption(this, capturedOptIdx, capturedChIdx); });
+      })(idx, i);
+      grid.appendChild(btn);
+    });
+  } else {
+    // Bonus
+    document.getElementById('ch-num').textContent='✦ Desafío Bonus ✦';
+    document.getElementById('ch-counter').textContent='✨ Desafío Bonus ✨';
+    document.getElementById('ch-q').textContent='¡Último reto! Ordena las palabras de la frase de Canserbero...';
+    document.getElementById('opts-grid').style.display='none';
+    document.getElementById('order-section').style.display='block';
+    setupOrder();
+  }
+}
+
+// ══════════════════════════
+// OPTION HANDLER — FIXED
+// ══════════════════════════
+function handleOption(btn, selectedIdx, chIdx){
+  if(locked) return;  // already answered
+  locked=true;
+
+  const ch=CHALLENGES[chIdx];
+  const grid=document.getElementById('opts-grid');
+  const allBtns=grid.querySelectorAll('.opt-btn');
+
+  // Disable ALL buttons
+  allBtns.forEach(b=>{ b.disabled=true; });
+
+  const fb=document.getElementById('ch-fb');
+
+  if(selectedIdx === ch.correctIdx){
+    btn.classList.add('is-correct');
+    fb.className='fb-msg ok';
+    fb.textContent='✓ ¡Correcto! Cargando recuerdo...';
+    setTimeout(()=>showReward(chIdx), 700);
+  } else {
+    btn.classList.add('is-wrong');
+    allBtns[ch.correctIdx].classList.add('is-correct'); // reveal correct
+    fb.className='fb-msg err';
+    fb.textContent='✗ ¡Casi! Pero mira cuál era... seguimos igual 💫';
+    setTimeout(()=>showReward(chIdx), 1600);
+  }
+}
+
+// ══════════════════════════
+// REWARD MODAL
+// ══════════════════════════
+function showReward(chIdx){
+  const r=REWARDS[chIdx];
+  document.getElementById('m-emoji').textContent=r.emoji;
+  document.getElementById('m-title').textContent=r.title;
+  document.getElementById('m-msg').textContent=r.msg;
+  const ph=document.getElementById('m-photo');
+  ph.src='foto_'+(chIdx+1)+'.jpg';
+  ph.className='modal-photo show';
+  const nextIdx=chIdx+1;
+  modalCB=()=>{
+    if(nextIdx<=CHALLENGES.length){
+      loadChallenge(nextIdx);
+      setProgress(((nextIdx)/8)*100);
+    } else {
+      showScreen('screen-box');
+      setProgress(72);
+    }
+  };
+  document.getElementById('modal').classList.add('active');
+  launchConfetti();
+}
+function closeModal(){ document.getElementById('modal').classList.remove('active'); if(modalCB){ modalCB(); modalCB=null; } }
+
+// ══════════════════════════
+// BONUS ORDER
+// ══════════════════════════
+function setupOrder(){
+  shuffled=[...PHRASE].sort(()=>Math.random()-.5);
+  placedWords=[];
+  const pool=document.getElementById('zone-pool');
+  const result=document.getElementById('zone-result');
+  pool.innerHTML=''; result.innerHTML='';
+  shuffled.forEach((w,i)=>{
+    const ch=document.createElement('span');
+    ch.className='w-chip'; ch.textContent=w; ch.dataset.si=i;
+    (function(ci){ ch.addEventListener('click',()=>addWord(ch,ci)); })(i);
+    pool.appendChild(ch);
+  });
+}
+function addWord(chip,si){
+  if(chip.classList.contains('placed')) return;
+  chip.classList.add('placed');
+  placedWords.push({w:chip.textContent,si:si});
+  const result=document.getElementById('zone-result');
+  const pc=document.createElement('span');
+  pc.className='w-chip'; pc.textContent=chip.textContent; pc.dataset.si=si;
+  (function(csi){ pc.addEventListener('click',()=>removeWord(pc,chip,csi)); })(si);
+  result.appendChild(pc);
+}
+function removeWord(pc,original,si){
+  placedWords=placedWords.filter(p=>p.si!=si);
+  pc.remove();
+  document.querySelector('#zone-pool .w-chip[data-si="'+si+'"]').classList.remove('placed');
+}
+function checkOrder(){
+  const fb=document.getElementById('ch-fb');
+  if(placedWords.length!==PHRASE.length){ fb.className='fb-msg err'; fb.textContent='✗ Faltan palabras... ¡coloca todas!'; return; }
+  const ok=placedWords.every((p,i)=>p.w.toLowerCase()===PHRASE[i].toLowerCase());
+  if(ok){ fb.className='fb-msg ok'; fb.textContent='✨ ¡Perfecto! La frase de Canserbero está completa...'; launchConfetti(3200); setTimeout(()=>{ showScreen('screen-box'); setProgress(72); },2200); }
+  else   { fb.className='fb-msg err'; fb.textContent='✗ El orden no es correcto... intenta de nuevo 🌙'; }
+}
+
+// ══════════════════════════
+// TRANSITIONS
+// ══════════════════════════
+function goQueen(){ playAudio('aud-act2'); showScreen('screen-queen'); setProgress(80); }
+function goAct3() { playAudio('aud-noctis'); noctisStep=0; loadNoctis(0); showScreen('screen-act3'); setProgress(83); }
+
+// ══════════════════════════
+// NOCTIS
+// ══════════════════════════
+function loadNoctis(idx){
+  noctisStep=idx;
+  const nc=N_CHALLENGES[idx];
+  document.getElementById('nch-num').textContent='✦ Invocación 0'+(idx+1)+'/05 ✦';
+  document.getElementById('nch-q').textContent=nc.q;
+  document.getElementById('nch-hint').textContent=nc.hint;
+  const inp=document.getElementById('nch-inp');
+  inp.value=''; inp.placeholder=nc.ph; inp.disabled=false; inp.style.borderColor='';
+  document.getElementById('nch-fb').textContent='';
+  document.getElementById('nch-fb').className='fb-msg';
+}
+
+function norm(s){ return s.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim(); }
+
+function checkNoctis(){
+  const inp=document.getElementById('nch-inp');
+  const val=norm(inp.value);
+  const fb=document.getElementById('nch-fb');
+  if(!val){ fb.className='fb-msg err'; fb.textContent='✗ Escribe tu respuesta primero.'; return; }
+
+  let ok=false;
+  if(noctisStep===0) ok = val.includes('16') && (val.includes('sept') || val.includes('09')) && val.includes('2006');
+  if(noctisStep===1) ok = val.includes('japon') || val.includes('japan');
+  if(noctisStep===2) ok = val.includes('one piece') || val.includes('onepiece');
+  if(noctisStep===3) ok = val==='8' || val==='ocho';
+  if(noctisStep===4) ok = val.includes('jorimar');
+
+  if(ok){
+    fb.className='fb-msg ok';
+    fb.textContent='⚡ '+N_MSGS[noctisStep].msg;
+    inp.disabled=true;
+    document.getElementById('o'+noctisStep).classList.add('lit');
+    document.getElementById('circle-text').textContent=(noctisStep+1)+'/5';
+    const step=noctisStep;
+    setTimeout(()=>{
+      if(step<4){ loadNoctis(step+1); setProgress(83+(step+1)*3); }
+      else { launchConfetti(5000); setTimeout(()=>{ showScreen('screen-final'); setProgress(100); },2600); }
+    },2300);
+  } else {
+    fb.className='fb-msg err';
+    fb.textContent='✗ El círculo mágico tiembla... intenta de nuevo. 🔮';
+    inp.style.borderColor='#ff5064';
+    setTimeout(()=>{ inp.style.borderColor=''; },900);
+  }
+}
+document.getElementById('nch-inp').addEventListener('keydown',e=>{ if(e.key==='Enter') checkNoctis(); });
+</script>
+</body>
+</html>
